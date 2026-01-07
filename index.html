@@ -9,12 +9,12 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
   <style>
     /* --- VARIABLES --- */
     :root {
-      /* Dark Mode (Default) */
+      /* Dark Mode */
       --bg-body: #000000;
       --bg-gradient: radial-gradient(circle at 50% 0%, #1a2a44 0%, #000000 100%);
       --card-glass: rgba(28, 28, 30, 0.65);
@@ -26,13 +26,14 @@
       --widget-bg: rgba(255, 255, 255, 0.08);
       --success: #30D158;
       --danger: #FF453A;
+      --warning: #FFD60A;
       --switch-bg: rgba(255, 255, 255, 0.1);
     }
 
     [data-theme="light"] {
       --bg-body: #F2F2F7;
-      --bg-gradient: linear-gradient(180deg, #F2F2F7 0%, #FFFFFF 100%);
-      --card-glass: rgba(255, 255, 255, 0.75);
+      --bg-gradient: linear-gradient(180deg, #E5E5EA 0%, #FFFFFF 100%);
+      --card-glass: rgba(255, 255, 255, 0.65);
       --card-border: rgba(0, 0, 0, 0.05);
       --text-main: #1d1d1f;
       --text-sec: #86868b;
@@ -41,6 +42,7 @@
       --widget-bg: rgba(0, 0, 0, 0.04);
       --success: #34C759;
       --danger: #FF3B30;
+      --warning: #FF9500;
       --switch-bg: rgba(0, 0, 0, 0.05);
     }
 
@@ -48,11 +50,11 @@
     
     body {
       margin: 0; padding: 0;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Inter', sans-serif;
       background: var(--bg-body);
       background-image: var(--bg-gradient);
       color: var(--text-main);
-      height: 100dvh; /* Dynamic Height for Mobile */
+      height: 100dvh;
       width: 100%;
       display: flex;
       flex-direction: column;
@@ -62,13 +64,8 @@
       transition: background 0.4s ease;
     }
 
-    /* THEME SWITCH (Floating Capsule) */
-    .switch-wrap {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 50;
-    }
+    /* THEME SWITCH */
+    .switch-wrap { position: absolute; top: 20px; right: 20px; z-index: 50; }
     .theme-btn {
       background: var(--card-glass);
       backdrop-filter: blur(20px);
@@ -76,9 +73,7 @@
       border: 1px solid var(--card-border);
       padding: 8px 16px;
       border-radius: 30px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: flex; align-items: center; gap: 8px;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       transition: transform 0.2s;
@@ -87,17 +82,17 @@
     .theme-btn i { font-size: 14px; color: var(--text-main); }
     .theme-text { font-size: 12px; font-weight: 600; color: var(--text-main); }
 
-    /* CARD DESIGN */
+    /* GLASS CARD */
     .glass-card {
       position: relative;
       width: 90%;
       max-width: 360px;
       background: var(--card-glass);
       backdrop-filter: blur(40px);
-      -webkit-backdrop-filter: blur(40px); /* Safari support */
+      -webkit-backdrop-filter: blur(40px);
       border-radius: 32px;
       border: 1px solid var(--card-border);
-      padding: 32px 24px;
+      padding: 40px 24px 32px; /* Top padding increased for window controls */
       box-shadow: 0 20px 60px -10px rgba(0,0,0,0.3);
       text-align: center;
       animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -105,18 +100,39 @@
 
     @keyframes floatUp { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
+    /* WINDOW CONTROLS (Red/Yellow/Green with Icons) */
+    .window-controls {
+      position: absolute;
+      top: 18px;
+      left: 20px;
+      display: flex;
+      gap: 8px;
+    }
+    .dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+    .dot i { font-size: 7px; color: rgba(0,0,0,0.6); font-weight: 900; }
+    .dot:hover { transform: scale(1.1); }
+
+    .dot.red { background: #FF5F57; }
+    .dot.yellow { background: #FEBC2E; }
+    .dot.green { background: #28C840; }
+
     /* HEADER */
     .icon-glow {
       width: 72px; height: 72px;
       border-radius: 24px;
       background: var(--accent-gradient);
-      margin: 0 auto 20px;
+      margin: 10px auto 20px;
       display: flex; align-items: center; justify-content: center;
       font-size: 32px; color: #fff;
       box-shadow: var(--btn-shadow);
       position: relative;
     }
-    /* Subtle pulse behind icon */
     .icon-glow::after {
       content: ''; position: absolute; inset: -4px;
       background: var(--accent-gradient);
@@ -151,12 +167,9 @@
     }
     .info-row:last-child { border-bottom: none; }
     .lbl { font-size: 13px; font-weight: 500; color: var(--text-sec); }
-    .val { font-size: 13px; font-weight: 600; font-family: 'Courier New', monospace; color: var(--text-main); opacity: 0.9; }
+    .val { font-size: 13px; font-weight: 600; font-family: 'JetBrains Mono', monospace; color: var(--text-main); opacity: 0.9; cursor: pointer; }
 
-    /* ACTION AREA */
-    .action-area { min-height: 60px; display: flex; flex-direction: column; justify-content: center; }
-
-    /* PREMIUM BUTTON */
+    /* BUTTONS */
     .ios-btn {
       width: 100%;
       padding: 16px;
@@ -172,30 +185,30 @@
       position: relative;
       overflow: hidden;
     }
-    .ios-btn:active { transform: scale(0.96); box-shadow: none; opacity: 0.9; }
-    /* Shine effect */
-    .ios-btn::before {
-      content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      transform: skewX(-20deg); transition: 0.5s;
-    }
-    .ios-btn:hover::before { left: 150%; }
-
+    .ios-btn:active { transform: scale(0.96); opacity: 0.9; }
     .btn-red { background: linear-gradient(135deg, #ff5e57 0%, #ff3b30 100%); box-shadow: 0 8px 20px rgba(255, 59, 48, 0.3); }
 
-    /* TIMER & ERROR */
+    /* TIMER DISPLAY */
     .timer-wrap { text-align: center; display: none; }
     .timer-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; color: var(--text-sec); margin-bottom: 5px; }
-    .timer-val { font-size: 36px; font-weight: 800; color: var(--text-main); letter-spacing: -1px; font-variant-numeric: tabular-nums; text-shadow: 0 0 20px rgba(0, 122, 255, 0.4); }
+    
+    /* TOTAL HOURS FIX: Using Mono font for alignment */
+    .timer-val { 
+        font-size: 38px; 
+        font-weight: 800; 
+        color: var(--text-main); 
+        letter-spacing: -2px; 
+        font-family: 'JetBrains Mono', monospace;
+        text-shadow: 0 0 20px rgba(0, 122, 255, 0.4); 
+    }
 
+    /* ERROR BAR */
     .err-wrap { display: none; width: 100%; margin-bottom: 15px; }
     .progress-bar { height: 6px; background: var(--widget-bg); border-radius: 10px; overflow: hidden; }
     .fill { height: 100%; background: var(--danger); width: 0%; border-radius: 10px; }
 
-    /* UTILS */
     .hidden { display: none !important; }
-    .copied { animation: pulseCopy 0.3s ease; color: var(--success); }
-    @keyframes pulseCopy { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    .copied { color: var(--success); transition: color 0.3s; }
   </style>
 </head>
 <body>
@@ -209,13 +222,15 @@
 
   <div class="glass-card">
     
+    <div class="window-controls">
+      <div class="dot red"><i class="fas fa-times"></i></div>      <div class="dot yellow"><i class="fas fa-exclamation"></i></div> <div class="dot green"><i class="fas fa-check"></i></div>    </div>
+
     <div class="icon-glow" id="mainIcon">
       <i class="fas fa-fingerprint"></i>
     </div>
 
     <div class="status-badge" id="statusBadge">
-      <i class="fas fa-circle-notch fa-spin"></i> Connecting...
-    </div>
+      <i class="fas fa-circle-notch fa-spin"></i>wait for connecting..</div>
 
     <h1 id="title">Verification</h1>
     <p class="desc" id="subtitle">Please wait while we verify your device securely.</p>
@@ -275,7 +290,6 @@
     function copyText(el) {
       if(el.textContent === 'Scanning...' || el.textContent === 'Waiting...') return;
       navigator.clipboard.writeText(el.textContent);
-      const original = el.style.color;
       el.classList.add('copied');
       setTimeout(() => el.classList.remove('copied'), 500);
     }
@@ -345,7 +359,7 @@
       }
     }
 
-    // --- COUNTDOWNS ---
+    // --- LOGIC ---
     let interval = null;
     
     function startErrorClose(seconds) {
@@ -368,7 +382,7 @@
       if(interval) clearInterval(interval);
       ui.err.style.display = 'none';
       ui.exp.style.display = 'block';
-      ui.close.classList.add('hidden'); // Hide close button on success for clean look
+      ui.close.classList.add('hidden');
 
       const tick = () => {
         const diff = expiryTs - Date.now();
@@ -377,18 +391,24 @@
           ui.timer.style.color = "var(--danger)";
           clearInterval(interval); return;
         }
-        const h = Math.floor((diff % 86400000) / 3600000);
+
+        // --- NEW LOGIC: TOTAL HOURS (No Days) ---
+        // Converts 2 days -> 48 hours
+        const h = Math.floor(diff / 3600000); 
         const m = Math.floor((diff % 3600000) / 60000);
         const s = Math.floor((diff % 60000) / 1000);
+
+        // Format: HH:MM:SS (e.g., 48:00:00)
         ui.timer.textContent = `${h<10?'0'+h:h}:${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
       };
+      
       tick();
       interval = setInterval(tick, 1000);
     }
 
     ui.close.onclick = () => window.close();
 
-    // --- MAIN LOGIC (UNCHANGED) ---
+    // --- MAIN ---
     async function verify() {
       try {
         setStatus('loading', 'Authenticating', 'Establishing secure handshake...');
