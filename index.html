@@ -14,7 +14,6 @@
   <style>
     /* --- VARIABLES --- */
     :root {
-      /* Dark Mode */
       --bg-body: #000000;
       --bg-gradient: radial-gradient(circle at 50% 0%, #1a2a44 0%, #000000 100%);
       --card-glass: rgba(28, 28, 30, 0.65);
@@ -27,7 +26,6 @@
       --success: #30D158;
       --danger: #FF453A;
       --warning: #FFD60A; /* iOS Yellow */
-      --switch-bg: rgba(255, 255, 255, 0.1);
     }
 
     [data-theme="light"] {
@@ -43,7 +41,6 @@
       --success: #34C759;
       --danger: #FF3B30;
       --warning: #FF9500;
-      --switch-bg: rgba(0, 0, 0, 0.05);
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
@@ -230,7 +227,8 @@
     </div>
 
     <div class="status-badge" id="statusBadge">
-      <i class="fas fa-circle-notch fa-spin"></i> wait for connecting.. </div>
+      <i class="fas fa-circle-notch fa-spin"></i> Wait for connecting..
+    </div>
 
     <h1 id="title">Verification</h1>
     <p class="desc" id="subtitle">Please wait while we verify your device securely.</p>
@@ -341,7 +339,7 @@
       ui.icon.style.boxShadow = '';
 
       if (state === 'loading') {
-        ui.badge.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
+        ui.badge.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Wait for connecting..';
         ui.badge.style.color = 'var(--text-sec)';
         ui.badge.style.background = 'var(--widget-bg)';
         ui.icon.style.background = 'var(--accent-gradient)';
@@ -353,11 +351,10 @@
         ui.badge.style.background = 'rgba(48, 209, 88, 0.15)';
         
         ui.icon.style.background = 'var(--success)';
-        // FIXED: Using 'fa-check' which is Free, instead of 'fa-shield-check' which was Pro
         ui.icon.innerHTML = '<i class="fas fa-check"></i>'; 
         ui.icon.style.boxShadow = '0 8px 20px rgba(48, 209, 88, 0.3)';
 
-      } else if (state === 'warning') { 
+      } else if (state === 'warning') { // UPDATED: Already Verified
         ui.badge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Already Verified';
         ui.badge.style.color = 'var(--warning)';
         ui.badge.style.background = 'rgba(255, 214, 10, 0.15)';
@@ -429,7 +426,7 @@
         setStatus('loading', 'Authenticating', 'Establishing secure handshake...');
         
         if(!deviceId || !code || !slotId) {
-          setStatus('error', 'Link Invalid', 'Missing security parameters.');
+          setStatus('error', 'Invalid Link', 'Missing security parameters.');
           startErrorClose(5); return;
         }
 
@@ -437,17 +434,18 @@
         const snap = await codeRef.once('value');
         const data = snap.val();
 
+        // UPDATED TEXTS FOR ERROR 
         if(!data) { 
-          setStatus('error', 'Invalid Verification', 'Don't open direct link !, Start Verification in App.'); 
+          setStatus('error', 'Invalid Verification', 'Don\'t open direct link, Start Verification in app.'); 
           startErrorClose(5); return; 
         }
 
         ui.did.textContent = deviceId;
         if(data.access_token) ui.uid.textContent = data.access_token;
 
-        // CHECK IF USED
+        // CHECK IF USED - UPDATED TEXTS
         if(data.used === true) { 
-          setStatus('warning', 'Verify After Expired', 'This device has already been verified.'); 
+          setStatus('warning', 'Try After Expired', 'This device has already been verified'); 
           startErrorClose(5); return; 
         }
         
