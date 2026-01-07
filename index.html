@@ -9,7 +9,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
-/* ================= THEME ================= */
 :root{
   --bg:#0b0e18;
   --card:#12162a;
@@ -59,11 +58,19 @@ html,body{
   background:var(--card);
   border:1px solid var(--border);
   border-radius:26px;
-  padding:28px;
+  padding:26px;
+}
+
+/* 🌑 HEADER */
+.header{
+  text-align:center;
+  margin-bottom:8px;
+  font-size:20px;
+  opacity:.9;
 }
 
 .circle{
-  width:90px;height:90px;margin:0 auto 14px;
+  width:90px;height:90px;margin:0 auto 12px;
   border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   font-size:34px;
@@ -71,26 +78,43 @@ html,body{
 }
 
 h1{text-align:center;font-size:24px}
-.sub{text-align:center;font-size:13px;color:var(--muted);margin:8px 0 22px}
+.sub{text-align:center;font-size:13px;color:var(--muted);margin:6px 0 22px}
 
+/* MESSAGE */
 .notice{
-  padding:16px;border-radius:18px;
-  display:flex;gap:14px;
+  padding:16px 18px;
+  border-radius:18px;
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
   background:rgba(255,255,255,.05);
 }
 .nIcon{
-  width:40px;height:40px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
+  width:40px;height:40px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   background:#0004;
+  margin-top:2px;
 }
-.nText{font-size:14px;font-weight:600}
+.nText{
+  font-size:14px;
+  font-weight:600;
+  line-height:1.4;
+  padding-top:6px;
+}
 
 .row{
   display:flex;justify-content:space-between;
   padding:14px 0;border-bottom:1px solid var(--border);
 }
 .label{font-size:11px;color:var(--muted)}
-.value{font-family:var(--mono);color:var(--primary)}
+.value{
+  font-family:var(--mono);
+  color:var(--primary);
+  user-select:none;
+}
 
 .track{
   height:6px;background:#fff2;border-radius:6px;
@@ -126,19 +150,22 @@ button{
 <div class="app">
 <div class="panel">
 
+  <div class="header">🌑</div>
+
   <div class="circle" id="topIcon">⏳</div>
   <h1 id="title">VERIFYING</h1>
   <div class="sub" id="subtitle">Checking device authorization…</div>
 
   <div class="notice">
     <div class="nIcon" id="msgIcon">•</div>
-    <div class="nText" id="msgText">Connecting…</div>
+    <div class="nText" id="msgText">wait for connecting..</div>
   </div>
 
   <div class="row">
     <span class="label">DEVICE ID</span>
     <span class="value" id="deviceId">—</span>
   </div>
+
   <div class="row">
     <span class="label">TOKEN</span>
     <span class="value" id="userId">—</span>
@@ -158,7 +185,7 @@ button{
 </div>
 
 <script>
-/* ================= FIREBASE (SAME) ================= */
+/* ================= FIREBASE ================= */
 firebase.initializeApp({
   apiKey:"AIzaSyBeHXB_9nHTWofFeXKOVUlQYCrB4YhAx_w",
   databaseURL:"https://real-apk-pin-default-rtdb.firebaseio.com"
@@ -167,26 +194,57 @@ const database=firebase.database();
 
 /* ================= ELEMENTS ================= */
 const topIcon=document.getElementById('topIcon');
-const msgIcon=document.getElementById('msgIcon');
 const msgText=document.getElementById('msgText');
 const titleEl=document.getElementById('title');
 const subtitleEl=document.getElementById('subtitle');
 const deviceEl=document.getElementById('deviceId');
 const userEl=document.getElementById('userId');
 const bar=document.getElementById('progressBar');
-const closeBtn=document.getElementById('closeBtn');
 const expiryArea=document.getElementById('expiryArea');
 const expiryTimer=document.getElementById('expiryTimer');
+const closeBtn=document.getElementById('closeBtn');
 
 /* ================= PARAMS ================= */
 const p=new URLSearchParams(location.search);
 const deviceId=p.get('device');
 const code=p.get('code');
 const slotId=p.get('uid');
-
 deviceEl.textContent=deviceId||'—';
 
-/* ================= HELPERS ================= */
+/* ================= DOUBLE TAP COPY (DEVICE ID) ================= */
+let lastTap=0;
+deviceEl.addEventListener('touchend',()=>{
+  const now=Date.now();
+  if(now-lastTap<300){
+    copyText(deviceEl.textContent);
+    showCopied();
+  }
+  lastTap=now;
+});
+
+/* COPY HELPERS */
+function copyText(t){
+  if(!t||t==='—')return;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(t).catch(()=>fallbackCopy(t));
+  }else fallbackCopy(t);
+}
+function fallbackCopy(t){
+  const ta=document.createElement('textarea');
+  ta.value=t;document.body.appendChild(ta);
+  ta.select();document.execCommand('copy');ta.remove();
+}
+function showCopied(){
+  const old=deviceEl.textContent;
+  deviceEl.textContent=old+" ✓";
+  deviceEl.style.color='var(--accent)';
+  setTimeout(()=>{
+    deviceEl.textContent=old;
+    deviceEl.style.color='var(--primary)';
+  },800);
+}
+
+/* ================= LOGIC ================= */
 function setError(msg){
   topIcon.textContent='✖';
   titleEl.textContent='FAILED';
@@ -194,20 +252,17 @@ function setError(msg){
   msgText.textContent='Access Denied';
   startClose(5);
 }
-
 function setSuccess(){
   topIcon.textContent='✔';
   titleEl.textContent='SUCCESS';
   subtitleEl.textContent='Device Authorized';
   msgText.textContent='Access Granted';
 }
-
 function startClose(sec){
   bar.style.transition=`width ${sec}s linear`;
   bar.style.width='100%';
   setTimeout(()=>window.close(),sec*1000);
 }
-
 function startExpiry(ts){
   expiryArea.style.display='block';
   const i=setInterval(()=>{
@@ -223,11 +278,10 @@ function startExpiry(ts){
   },1000);
 }
 
-/* ================= MAIN VERIFY (ORIGINAL LOGIC) ================= */
+/* ================= VERIFY ================= */
 async function verify(){
  try{
   if(!deviceId||!code||!slotId){setError('Invalid Params');return;}
-
   const ref=database.ref(`users/${slotId}/verification_codes/${code}`);
   const snap=await ref.once('value');
   const data=snap.val();
@@ -239,7 +293,6 @@ async function verify(){
   const now=Date.now();
   await ref.update({used:true,used_at:now});
   setSuccess();
-
   userEl.textContent=data.access_token||'AUTHORIZED';
 
   const cfg=await database.ref(`users/${slotId}/config`).once('value');
