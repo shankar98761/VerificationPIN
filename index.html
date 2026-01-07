@@ -26,7 +26,7 @@
       --widget-bg: rgba(255, 255, 255, 0.08);
       --success: #30D158;
       --danger: #FF453A;
-      --warning: #FFD60A;
+      --warning: #FFD60A; /* iOS Yellow */
       --switch-bg: rgba(255, 255, 255, 0.1);
     }
 
@@ -92,7 +92,7 @@
       -webkit-backdrop-filter: blur(40px);
       border-radius: 32px;
       border: 1px solid var(--card-border);
-      padding: 40px 24px 32px; /* Top padding increased for window controls */
+      padding: 40px 24px 32px;
       box-shadow: 0 20px 60px -10px rgba(0,0,0,0.3);
       text-align: center;
       animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -100,7 +100,7 @@
 
     @keyframes floatUp { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-    /* WINDOW CONTROLS (Red/Yellow/Green with Icons) */
+    /* WINDOW CONTROLS */
     .window-controls {
       position: absolute;
       top: 18px;
@@ -115,7 +115,7 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
       transition: transform 0.2s;
     }
-    .dot i { font-size: 7px; color: rgba(0,0,0,0.6); font-weight: 900; }
+    .dot i { font-size: 7px; color: rgba(0,0,0,0.5); font-weight: 900; }
     .dot:hover { transform: scale(1.1); }
 
     .dot.red { background: #FF5F57; }
@@ -132,11 +132,13 @@
       font-size: 32px; color: #fff;
       box-shadow: var(--btn-shadow);
       position: relative;
+      transition: all 0.3s ease;
     }
     .icon-glow::after {
       content: ''; position: absolute; inset: -4px;
-      background: var(--accent-gradient);
+      background: inherit;
       border-radius: 28px; z-index: -1; opacity: 0.4; filter: blur(10px);
+      transition: all 0.3s ease;
     }
     
     .status-badge {
@@ -191,14 +193,9 @@
     /* TIMER DISPLAY */
     .timer-wrap { text-align: center; display: none; }
     .timer-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; color: var(--text-sec); margin-bottom: 5px; }
-    
-    /* TOTAL HOURS FIX: Using Mono font for alignment */
     .timer-val { 
-        font-size: 38px; 
-        font-weight: 800; 
-        color: var(--text-main); 
-        letter-spacing: -2px; 
-        font-family: 'JetBrains Mono', monospace;
+        font-size: 38px; font-weight: 800; color: var(--text-main); 
+        letter-spacing: -2px; font-family: 'JetBrains Mono', monospace;
         text-shadow: 0 0 20px rgba(0, 122, 255, 0.4); 
     }
 
@@ -223,14 +220,17 @@
   <div class="glass-card">
     
     <div class="window-controls">
-      <div class="dot red"><i class="fas fa-times"></i></div>      <div class="dot yellow"><i class="fas fa-exclamation"></i></div> <div class="dot green"><i class="fas fa-check"></i></div>    </div>
+      <div class="dot red"><i class="fas fa-times"></i></div>      
+      <div class="dot yellow"><i class="fas fa-exclamation"></i></div> 
+      <div class="dot green"><i class="fas fa-check"></i></div>    
+    </div>
 
     <div class="icon-glow" id="mainIcon">
       <i class="fas fa-fingerprint"></i>
     </div>
 
     <div class="status-badge" id="statusBadge">
-      <i class="fas fa-circle-notch fa-spin"></i>wait for connecting..</div>
+      <i class="fas fa-circle-notch fa-spin"></i> wait for connecting.. </div>
 
     <h1 id="title">Verification</h1>
     <p class="desc" id="subtitle">Please wait while we verify your device securely.</p>
@@ -336,19 +336,37 @@
       ui.title.textContent = msg;
       ui.sub.textContent = desc;
 
+      // Reset Icon styles
+      ui.icon.style.background = '';
+      ui.icon.style.boxShadow = '';
+
       if (state === 'loading') {
         ui.badge.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
         ui.badge.style.color = 'var(--text-sec)';
         ui.badge.style.background = 'var(--widget-bg)';
+        ui.icon.style.background = 'var(--accent-gradient)';
+        ui.icon.innerHTML = '<i class="fas fa-fingerprint"></i>';
+
       } else if (state === 'success') {
         ui.badge.innerHTML = '<i class="fas fa-check-circle"></i> Verified Securely';
         ui.badge.style.color = 'var(--success)';
         ui.badge.style.background = 'rgba(48, 209, 88, 0.15)';
         
         ui.icon.style.background = 'var(--success)';
-        ui.icon.innerHTML = '<i class="fas fa-shield-check"></i>';
+        // FIXED: Using 'fa-check' which is Free, instead of 'fa-shield-check' which was Pro
+        ui.icon.innerHTML = '<i class="fas fa-check"></i>'; 
         ui.icon.style.boxShadow = '0 8px 20px rgba(48, 209, 88, 0.3)';
-      } else {
+
+      } else if (state === 'warning') { 
+        ui.badge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Used Code';
+        ui.badge.style.color = 'var(--warning)';
+        ui.badge.style.background = 'rgba(255, 214, 10, 0.15)';
+        
+        ui.icon.style.background = 'var(--warning)';
+        ui.icon.innerHTML = '<i class="fas fa-exclamation"></i>'; 
+        ui.icon.style.boxShadow = '0 8px 20px rgba(255, 214, 10, 0.3)';
+
+      } else { // Error
         ui.badge.innerHTML = '<i class="fas fa-exclamation-circle"></i> Failed';
         ui.badge.style.color = 'var(--danger)';
         ui.badge.style.background = 'rgba(255, 69, 58, 0.15)';
@@ -392,13 +410,10 @@
           clearInterval(interval); return;
         }
 
-        // --- NEW LOGIC: TOTAL HOURS (No Days) ---
-        // Converts 2 days -> 48 hours
         const h = Math.floor(diff / 3600000); 
         const m = Math.floor((diff % 3600000) / 60000);
         const s = Math.floor((diff % 60000) / 1000);
 
-        // Format: HH:MM:SS (e.g., 48:00:00)
         ui.timer.textContent = `${h<10?'0'+h:h}:${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
       };
       
@@ -430,8 +445,9 @@
         ui.did.textContent = deviceId;
         if(data.access_token) ui.uid.textContent = data.access_token;
 
+        // CHECK IF USED
         if(data.used === true) { 
-          setStatus('error', 'Code Redeemed', 'This code has already been used.'); 
+          setStatus('warning', 'Code Redeemed', 'This code has already been used.'); 
           startErrorClose(5); return; 
         }
         
@@ -447,7 +463,6 @@
           last_code: code
         });
 
-        // Config Fetch
         const configRef = database.ref('users/' + slotId + '/config');
         const configSnap = await configRef.once('value');
         const configData = configSnap.val() || {};
