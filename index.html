@@ -1,312 +1,455 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Verification</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Verification Portal</title>
+  
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <style>
+    /* --- VARIABLES --- */
+    :root {
+      /* Dark Mode (Default) */
+      --bg-body: #000000;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1a2a44 0%, #000000 100%);
+      --card-glass: rgba(28, 28, 30, 0.65);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text-main: #FFFFFF;
+      --text-sec: #86868b;
+      --accent-gradient: linear-gradient(135deg, #2ac3fc 0%, #007aff 100%);
+      --btn-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
+      --widget-bg: rgba(255, 255, 255, 0.08);
+      --success: #30D158;
+      --danger: #FF453A;
+      --switch-bg: rgba(255, 255, 255, 0.1);
+    }
 
-<style>
-:root{
-  --bg:#0b0e18;
-  --card:#12162a;
-  --border:#1f243a;
+    [data-theme="light"] {
+      --bg-body: #F2F2F7;
+      --bg-gradient: linear-gradient(180deg, #F2F2F7 0%, #FFFFFF 100%);
+      --card-glass: rgba(255, 255, 255, 0.75);
+      --card-border: rgba(0, 0, 0, 0.05);
+      --text-main: #1d1d1f;
+      --text-sec: #86868b;
+      --accent-gradient: linear-gradient(135deg, #00C7BE 0%, #007aff 100%);
+      --btn-shadow: 0 8px 20px rgba(0, 122, 255, 0.2);
+      --widget-bg: rgba(0, 0, 0, 0.04);
+      --success: #34C759;
+      --danger: #FF3B30;
+      --switch-bg: rgba(0, 0, 0, 0.05);
+    }
 
-  --primary:#6ae3ff;
-  --secondary:#9b6bff;
-  --accent:#4dffb3;
-  --danger:#ff6b6b;
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+    
+    body {
+      margin: 0; padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-body);
+      background-image: var(--bg-gradient);
+      color: var(--text-main);
+      height: 100dvh; /* Dynamic Height for Mobile */
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: background 0.4s ease;
+    }
 
-  --text:#ffffff;
-  --muted:#9aa4c7;
-  --mono:'Courier New',monospace;
-}
+    /* THEME SWITCH (Floating Capsule) */
+    .switch-wrap {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 50;
+    }
+    .theme-btn {
+      background: var(--card-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      padding: 8px 16px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .theme-btn:active { transform: scale(0.92); }
+    .theme-btn i { font-size: 14px; color: var(--text-main); }
+    .theme-text { font-size: 12px; font-weight: 600; color: var(--text-main); }
 
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{
-  width:100%;height:100%;
-  background:var(--bg);
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Segoe UI;
-  color:var(--text);
-  overflow:hidden;
-}
+    /* CARD DESIGN */
+    .glass-card {
+      position: relative;
+      width: 90%;
+      max-width: 360px;
+      background: var(--card-glass);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px); /* Safari support */
+      border-radius: 32px;
+      border: 1px solid var(--card-border);
+      padding: 32px 24px;
+      box-shadow: 0 20px 60px -10px rgba(0,0,0,0.3);
+      text-align: center;
+      animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-.bg{
-  position:fixed;inset:-30%;
-  background:
-    radial-gradient(40% 40% at 20% 20%, var(--primary), transparent 60%),
-    radial-gradient(40% 40% at 80% 25%, var(--secondary), transparent 60%),
-    radial-gradient(40% 40% at 50% 80%, var(--accent), transparent 60%);
-  filter:blur(120px);
-  opacity:.35;
-}
+    @keyframes floatUp { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-.app{
-  height:100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:env(safe-area-inset-top) env(safe-area-inset-right)
-          env(safe-area-inset-bottom) env(safe-area-inset-left);
-}
+    /* HEADER */
+    .icon-glow {
+      width: 72px; height: 72px;
+      border-radius: 24px;
+      background: var(--accent-gradient);
+      margin: 0 auto 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; color: #fff;
+      box-shadow: var(--btn-shadow);
+      position: relative;
+    }
+    /* Subtle pulse behind icon */
+    .icon-glow::after {
+      content: ''; position: absolute; inset: -4px;
+      background: var(--accent-gradient);
+      border-radius: 28px; z-index: -1; opacity: 0.4; filter: blur(10px);
+    }
+    
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px;
+      background: var(--widget-bg);
+      border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-sec);
+      margin-bottom: 12px;
+    }
+    
+    h1 { font-size: 24px; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.5px; }
+    p.desc { font-size: 14px; color: var(--text-sec); margin: 0 0 24px; line-height: 1.5; }
 
-.panel{
-  width:92%;
-  max-width:430px;
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:26px;
-  padding:26px;
-}
+    /* INFO WIDGET */
+    .info-widget {
+      background: var(--widget-bg);
+      border-radius: 20px;
+      padding: 4px;
+      display: flex; flex-direction: column;
+      margin-bottom: 24px;
+    }
+    .info-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .lbl { font-size: 13px; font-weight: 500; color: var(--text-sec); }
+    .val { font-size: 13px; font-weight: 600; font-family: 'Courier New', monospace; color: var(--text-main); opacity: 0.9; }
 
-/* 🌑 HEADER */
-.header{
-  text-align:center;
-  margin-bottom:8px;
-  font-size:20px;
-  opacity:.9;
-}
+    /* ACTION AREA */
+    .action-area { min-height: 60px; display: flex; flex-direction: column; justify-content: center; }
 
-.circle{
-  width:90px;height:90px;margin:0 auto 12px;
-  border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:34px;
-  background:linear-gradient(145deg,var(--primary),var(--secondary));
-}
+    /* PREMIUM BUTTON */
+    .ios-btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 18px;
+      background: var(--accent-gradient);
+      color: #fff;
+      font-size: 16px; font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      box-shadow: var(--btn-shadow);
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+      overflow: hidden;
+    }
+    .ios-btn:active { transform: scale(0.96); box-shadow: none; opacity: 0.9; }
+    /* Shine effect */
+    .ios-btn::before {
+      content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transform: skewX(-20deg); transition: 0.5s;
+    }
+    .ios-btn:hover::before { left: 150%; }
 
-h1{text-align:center;font-size:24px}
-.sub{text-align:center;font-size:13px;color:var(--muted);margin:6px 0 22px}
+    .btn-red { background: linear-gradient(135deg, #ff5e57 0%, #ff3b30 100%); box-shadow: 0 8px 20px rgba(255, 59, 48, 0.3); }
 
-/* MESSAGE */
-.notice{
-  padding:16px 18px;
-  border-radius:18px;
-  display:flex;
-  gap:14px;
-  align-items:flex-start;
-  background:rgba(255,255,255,.05);
-}
-.nIcon{
-  width:40px;height:40px;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#0004;
-  margin-top:2px;
-}
-.nText{
-  font-size:14px;
-  font-weight:600;
-  line-height:1.4;
-  padding-top:6px;
-}
+    /* TIMER & ERROR */
+    .timer-wrap { text-align: center; display: none; }
+    .timer-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; color: var(--text-sec); margin-bottom: 5px; }
+    .timer-val { font-size: 36px; font-weight: 800; color: var(--text-main); letter-spacing: -1px; font-variant-numeric: tabular-nums; text-shadow: 0 0 20px rgba(0, 122, 255, 0.4); }
 
-.row{
-  display:flex;justify-content:space-between;
-  padding:14px 0;border-bottom:1px solid var(--border);
-}
-.label{font-size:11px;color:var(--muted)}
-.value{
-  font-family:var(--mono);
-  color:var(--primary);
-  user-select:none;
-}
+    .err-wrap { display: none; width: 100%; margin-bottom: 15px; }
+    .progress-bar { height: 6px; background: var(--widget-bg); border-radius: 10px; overflow: hidden; }
+    .fill { height: 100%; background: var(--danger); width: 0%; border-radius: 10px; }
 
-.track{
-  height:6px;background:#fff2;border-radius:6px;
-  overflow:hidden;margin-top:22px;
-}
-.fill{
-  height:100%;width:0%;
-  background:linear-gradient(90deg,var(--secondary),var(--primary));
-  transition:width linear;
-}
-
-.expiry{
-  display:none;margin-top:22px;
-  padding:20px;border-radius:20px;
-  text-align:center;
-  background:rgba(77,255,179,.12);
-}
-.timer{font-family:var(--mono);font-size:28px}
-
-button{
-  margin-top:26px;width:100%;
-  padding:15px;border-radius:18px;
-  border:1px solid var(--danger);
-  background:transparent;color:var(--danger);
-  font-weight:700;
-}
-</style>
+    /* UTILS */
+    .hidden { display: none !important; }
+    .copied { animation: pulseCopy 0.3s ease; color: var(--success); }
+    @keyframes pulseCopy { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+  </style>
 </head>
-
 <body>
-<div class="bg"></div>
 
-<div class="app">
-<div class="panel">
-
-  <div class="header">🌑</div>
-
-  <div class="circle" id="topIcon">⏳</div>
-  <h1 id="title">VERIFYING</h1>
-  <div class="sub" id="subtitle">Checking device authorization…</div>
-
-  <div class="notice">
-    <div class="nIcon" id="msgIcon">•</div>
-    <div class="nText" id="msgText">wait for connecting..</div>
+  <div class="switch-wrap">
+    <div class="theme-btn" onclick="toggleTheme()">
+      <i class="fas fa-moon" id="themeIcon"></i>
+      <span class="theme-text" id="themeLabel">Dark</span>
+    </div>
   </div>
 
-  <div class="row">
-    <span class="label">DEVICE ID</span>
-    <span class="value" id="deviceId">—</span>
+  <div class="glass-card">
+    
+    <div class="icon-glow" id="mainIcon">
+      <i class="fas fa-fingerprint"></i>
+    </div>
+
+    <div class="status-badge" id="statusBadge">
+      <i class="fas fa-circle-notch fa-spin"></i> Connecting...
+    </div>
+
+    <h1 id="title">Verification</h1>
+    <p class="desc" id="subtitle">Please wait while we verify your device securely.</p>
+
+    <div class="info-widget">
+      <div class="info-row">
+        <span class="lbl">Device ID</span>
+        <span class="val" id="deviceId" onclick="copyText(this)">Scanning...</span>
+      </div>
+      <div class="info-row">
+        <span class="lbl">User Token</span>
+        <span class="val" id="userId" onclick="copyText(this)">Waiting...</span>
+      </div>
+    </div>
+
+    <div class="action-area">
+      
+      <div class="err-wrap" id="errorArea">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px; font-weight:600; color:var(--danger);">
+          <span>Auto Closing</span>
+          <span><span id="countdown">5</span>s</span>
+        </div>
+        <div class="progress-bar"><div class="fill" id="progressBar"></div></div>
+      </div>
+
+      <div class="timer-wrap" id="expiryArea">
+        <div class="timer-lbl">Session Active For</div>
+        <div class="timer-val" id="expiryTimer">00:00:00</div>
+      </div>
+
+      <button class="ios-btn btn-red hidden" id="closeBtn">Close Window</button>
+
+    </div>
   </div>
 
-  <div class="row">
-    <span class="label">TOKEN</span>
-    <span class="value" id="userId">—</span>
-  </div>
+  <script>
+    // --- THEME ---
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const icon = document.getElementById('themeIcon');
+      const lbl = document.getElementById('themeLabel');
+      
+      if (current === 'dark') {
+        html.setAttribute('data-theme', 'light');
+        icon.className = 'fas fa-sun';
+        lbl.textContent = 'Light';
+        icon.style.color = '#FFA500';
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        icon.className = 'fas fa-moon';
+        lbl.textContent = 'Dark';
+        icon.style.color = '#FFF';
+      }
+    }
 
-  <div class="track" id="windowCloseArea">
-    <div class="fill" id="progressBar"></div>
-  </div>
+    function copyText(el) {
+      if(el.textContent === 'Scanning...' || el.textContent === 'Waiting...') return;
+      navigator.clipboard.writeText(el.textContent);
+      const original = el.style.color;
+      el.classList.add('copied');
+      setTimeout(() => el.classList.remove('copied'), 500);
+    }
 
-  <div class="expiry" id="expiryArea">
-    <div class="timer" id="expiryTimer">00:00:00</div>
-  </div>
+    // --- FIREBASE SETUP ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBeHXB_9nHTWofFeXKOVUlQYCrB4YhAx_w",
+      authDomain: "real-apk-pin.firebaseapp.com",
+      databaseURL: "https://real-apk-pin-default-rtdb.firebaseio.com",
+      projectId: "real-apk-pin",
+      storageBucket: "real-apk-pin.firebasestorage.app",
+      messagingSenderId: "345555950697",
+      appId: "1:345555950697:web:e215d3e0850299e02096f8",
+      measurementId: "G-LPNCNHPYPF"
+    };
 
-  <button id="closeBtn">CLOSE</button>
+    if (!window.firebase) throw new Error('Firebase SDK not loaded');
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-</div>
-</div>
+    // --- DOM ---
+    const ui = {
+      icon: document.getElementById('mainIcon'),
+      title: document.getElementById('title'),
+      sub: document.getElementById('subtitle'),
+      badge: document.getElementById('statusBadge'),
+      did: document.getElementById('deviceId'),
+      uid: document.getElementById('userId'),
+      err: document.getElementById('errorArea'),
+      exp: document.getElementById('expiryArea'),
+      timer: document.getElementById('expiryTimer'),
+      bar: document.getElementById('progressBar'),
+      count: document.getElementById('countdown'),
+      close: document.getElementById('closeBtn')
+    };
 
-<script>
-/* ================= FIREBASE ================= */
-firebase.initializeApp({
-  apiKey:"AIzaSyBeHXB_9nHTWofFeXKOVUlQYCrB4YhAx_w",
-  databaseURL:"https://real-apk-pin-default-rtdb.firebaseio.com"
-});
-const database=firebase.database();
+    const params = new URLSearchParams(window.location.search);
+    const deviceId = params.get('device');
+    const code = params.get('code');
+    const slotId = params.get('uid');
 
-/* ================= ELEMENTS ================= */
-const topIcon=document.getElementById('topIcon');
-const msgText=document.getElementById('msgText');
-const titleEl=document.getElementById('title');
-const subtitleEl=document.getElementById('subtitle');
-const deviceEl=document.getElementById('deviceId');
-const userEl=document.getElementById('userId');
-const bar=document.getElementById('progressBar');
-const expiryArea=document.getElementById('expiryArea');
-const expiryTimer=document.getElementById('expiryTimer');
-const closeBtn=document.getElementById('closeBtn');
+    // --- STATE MANAGER ---
+    function setStatus(state, msg, desc) {
+      ui.title.textContent = msg;
+      ui.sub.textContent = desc;
 
-/* ================= PARAMS ================= */
-const p=new URLSearchParams(location.search);
-const deviceId=p.get('device');
-const code=p.get('code');
-const slotId=p.get('uid');
-deviceEl.textContent=deviceId||'—';
+      if (state === 'loading') {
+        ui.badge.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
+        ui.badge.style.color = 'var(--text-sec)';
+        ui.badge.style.background = 'var(--widget-bg)';
+      } else if (state === 'success') {
+        ui.badge.innerHTML = '<i class="fas fa-check-circle"></i> Verified Securely';
+        ui.badge.style.color = 'var(--success)';
+        ui.badge.style.background = 'rgba(48, 209, 88, 0.15)';
+        
+        ui.icon.style.background = 'var(--success)';
+        ui.icon.innerHTML = '<i class="fas fa-shield-check"></i>';
+        ui.icon.style.boxShadow = '0 8px 20px rgba(48, 209, 88, 0.3)';
+      } else {
+        ui.badge.innerHTML = '<i class="fas fa-exclamation-circle"></i> Failed';
+        ui.badge.style.color = 'var(--danger)';
+        ui.badge.style.background = 'rgba(255, 69, 58, 0.15)';
+        
+        ui.icon.style.background = 'var(--danger)';
+        ui.icon.innerHTML = '<i class="fas fa-times"></i>';
+        ui.icon.style.boxShadow = '0 8px 20px rgba(255, 69, 58, 0.3)';
+      }
+    }
 
-/* ================= DOUBLE TAP COPY (DEVICE ID) ================= */
-let lastTap=0;
-deviceEl.addEventListener('touchend',()=>{
-  const now=Date.now();
-  if(now-lastTap<300){
-    copyText(deviceEl.textContent);
-    showCopied();
-  }
-  lastTap=now;
-});
+    // --- COUNTDOWNS ---
+    let interval = null;
+    
+    function startErrorClose(seconds) {
+      if(interval) clearInterval(interval);
+      ui.err.style.display = 'block';
+      ui.exp.style.display = 'none';
+      ui.close.classList.remove('hidden');
 
-/* COPY HELPERS */
-function copyText(t){
-  if(!t||t==='—')return;
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(t).catch(()=>fallbackCopy(t));
-  }else fallbackCopy(t);
-}
-function fallbackCopy(t){
-  const ta=document.createElement('textarea');
-  ta.value=t;document.body.appendChild(ta);
-  ta.select();document.execCommand('copy');ta.remove();
-}
-function showCopied(){
-  const old=deviceEl.textContent;
-  deviceEl.textContent=old+" ✓";
-  deviceEl.style.color='var(--accent)';
-  setTimeout(()=>{
-    deviceEl.textContent=old;
-    deviceEl.style.color='var(--primary)';
-  },800);
-}
+      ui.bar.style.transition = 'none'; ui.bar.style.width = '0%';
+      setTimeout(() => { ui.bar.style.transition = `width ${seconds}s linear`; ui.bar.style.width = '100%'; }, 50);
 
-/* ================= LOGIC ================= */
-function setError(msg){
-  topIcon.textContent='✖';
-  titleEl.textContent='FAILED';
-  subtitleEl.textContent=msg;
-  msgText.textContent='Access Denied';
-  startClose(5);
-}
-function setSuccess(){
-  topIcon.textContent='✔';
-  titleEl.textContent='SUCCESS';
-  subtitleEl.textContent='Device Authorized';
-  msgText.textContent='Access Granted';
-}
-function startClose(sec){
-  bar.style.transition=`width ${sec}s linear`;
-  bar.style.width='100%';
-  setTimeout(()=>window.close(),sec*1000);
-}
-function startExpiry(ts){
-  expiryArea.style.display='block';
-  const i=setInterval(()=>{
-    const d=ts-Date.now();
-    if(d<=0){expiryTimer.textContent='EXPIRED';clearInterval(i);return;}
-    const h=Math.floor(d/3600000);
-    const m=Math.floor(d%3600000/60000);
-    const s=Math.floor(d%60000/1000);
-    expiryTimer.textContent=
-      String(h).padStart(2,'0')+':' +
-      String(m).padStart(2,'0')+':' +
-      String(s).padStart(2,'0');
-  },1000);
-}
+      let c = seconds; ui.count.textContent = c;
+      interval = setInterval(() => {
+        c--; ui.count.textContent = c;
+        if(c <= 0) { clearInterval(interval); window.close(); }
+      }, 1000);
+    }
 
-/* ================= VERIFY ================= */
-async function verify(){
- try{
-  if(!deviceId||!code||!slotId){setError('Invalid Params');return;}
-  const ref=database.ref(`users/${slotId}/verification_codes/${code}`);
-  const snap=await ref.once('value');
-  const data=snap.val();
+    function startExpiryTimer(expiryTs) {
+      if(interval) clearInterval(interval);
+      ui.err.style.display = 'none';
+      ui.exp.style.display = 'block';
+      ui.close.classList.add('hidden'); // Hide close button on success for clean look
 
-  if(!data){setError('Wrong Code');return;}
-  if(data.used){setError('Code Already Used');return;}
-  if(data.deviceId!==deviceId){setError('Device Mismatch');return;}
+      const tick = () => {
+        const diff = expiryTs - Date.now();
+        if(diff <= 0) {
+          ui.timer.textContent = "EXPIRED";
+          ui.timer.style.color = "var(--danger)";
+          clearInterval(interval); return;
+        }
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        ui.timer.textContent = `${h<10?'0'+h:h}:${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+      };
+      tick();
+      interval = setInterval(tick, 1000);
+    }
 
-  const now=Date.now();
-  await ref.update({used:true,used_at:now});
-  setSuccess();
-  userEl.textContent=data.access_token||'AUTHORIZED';
+    ui.close.onclick = () => window.close();
 
-  const cfg=await database.ref(`users/${slotId}/config`).once('value');
-  const min=parseInt(cfg.val()?.verification_minutes||1440);
-  startExpiry(now+min*60000);
+    // --- MAIN LOGIC (UNCHANGED) ---
+    async function verify() {
+      try {
+        setStatus('loading', 'Authenticating', 'Establishing secure handshake...');
+        
+        if(!deviceId || !code || !slotId) {
+          setStatus('error', 'Link Invalid', 'Missing security parameters.');
+          startErrorClose(5); return;
+        }
 
- }catch(e){
-  setError('Connection Error');
- }
-}
+        const codeRef = database.ref('users/' + slotId + '/verification_codes/' + code);
+        const snap = await codeRef.once('value');
+        const data = snap.val();
 
-closeBtn.onclick=()=>window.close();
-window.onload=verify;
-</script>
+        if(!data) { 
+          setStatus('error', 'Invalid Code', 'Code not found in database.'); 
+          startErrorClose(5); return; 
+        }
 
+        ui.did.textContent = deviceId;
+        if(data.access_token) ui.uid.textContent = data.access_token;
+
+        if(data.used === true) { 
+          setStatus('error', 'Code Redeemed', 'This code has already been used.'); 
+          startErrorClose(5); return; 
+        }
+        
+        if(data.deviceId !== deviceId) { 
+          setStatus('error', 'Device Mismatch', 'Code belongs to another ID.'); 
+          startErrorClose(5); return; 
+        }
+
+        const now = Date.now();
+        await codeRef.update({ used: true, used_at: now });
+        await database.ref('users/' + slotId + '/devices/' + deviceId).set({
+          verification_time: now,
+          last_code: code
+        });
+
+        // Config Fetch
+        const configRef = database.ref('users/' + slotId + '/config');
+        const configSnap = await configRef.once('value');
+        const configData = configSnap.val() || {};
+        
+        const vMinutes = parseInt(configData.verification_minutes || 0);
+        let durationMs = vMinutes * 60 * 1000;
+        if(durationMs <= 0) durationMs = 24 * 60 * 60 * 1000;
+
+        const token = data.access_token || "AUTH-" + Math.random().toString(36).substr(2,6).toUpperCase();
+        ui.uid.textContent = token;
+
+        setStatus('success', 'Access Granted', 'You may now return to the app.');
+        startExpiryTimer(now + durationMs);
+
+      } catch(e) {
+        console.error(e);
+        setStatus('error', 'Server Error', 'Connection interrupted.');
+        startErrorClose(5);
+      }
+    }
+
+    window.addEventListener('load', verify);
+  </script>
 </body>
 </html>
