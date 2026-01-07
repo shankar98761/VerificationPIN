@@ -358,7 +358,7 @@
         ui.icon.style.boxShadow = '0 8px 20px rgba(48, 209, 88, 0.3)';
 
       } else if (state === 'warning') { 
-        ui.badge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Used Code';
+        ui.badge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Already Verified';
         ui.badge.style.color = 'var(--warning)';
         ui.badge.style.background = 'rgba(255, 214, 10, 0.15)';
         
@@ -438,7 +438,7 @@
         const data = snap.val();
 
         if(!data) { 
-          setStatus('error', 'Invalid Code', 'Code not found in database.'); 
+          setStatus('error', 'Invalid Verification', 'Don't open direct link !, Start Verification in App.'); 
           startErrorClose(5); return; 
         }
 
@@ -447,7 +447,7 @@
 
         // CHECK IF USED
         if(data.used === true) { 
-          setStatus('warning', 'Code Redeemed', 'This code has already been used.'); 
+          setStatus('warning', 'Verify After Expired', 'This device has already been verified.'); 
           startErrorClose(5); return; 
         }
         
