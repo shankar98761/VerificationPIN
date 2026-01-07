@@ -9,24 +9,8 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
-/* ================= THEME SYSTEM ================= */
+/* ================= THEME ================= */
 :root{
-  --bg:#f5f6fb;
-  --card:#ffffff;
-  --border:#e6e8f0;
-
-  --primary:#4f7cff;
-  --secondary:#ff6cc9;
-  --accent:#2dd4bf;
-  --danger:#ff5a5a;
-
-  --text:#0f172a;
-  --muted:#64748b;
-  --mono:'Courier New',monospace;
-}
-
-/* DARK */
-[data-theme="dark"]{
   --bg:#0b0e18;
   --card:#12162a;
   --border:#1f243a;
@@ -38,48 +22,37 @@
 
   --text:#ffffff;
   --muted:#9aa4c7;
+  --mono:'Courier New',monospace;
 }
 
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{
-  width:100%;
-  height:100%;
+  width:100%;height:100%;
   background:var(--bg);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Segoe UI;
   color:var(--text);
   overflow:hidden;
 }
 
-/* ================= BACKGROUND ================= */
 .bg{
-  position:fixed;
-  inset:-30%;
+  position:fixed;inset:-30%;
   background:
     radial-gradient(40% 40% at 20% 20%, var(--primary), transparent 60%),
     radial-gradient(40% 40% at 80% 25%, var(--secondary), transparent 60%),
     radial-gradient(40% 40% at 50% 80%, var(--accent), transparent 60%);
   filter:blur(120px);
   opacity:.35;
-  animation:bgMove 18s ease-in-out infinite alternate;
-}
-@keyframes bgMove{
-  to{transform:translateY(-60px) scale(1.1)}
 }
 
-/* ================= LAYOUT ================= */
 .app{
   height:100%;
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:
-    env(safe-area-inset-top)
-    env(safe-area-inset-right)
-    env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right)
+          env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
-/* ================= CARD ================= */
 .panel{
   width:92%;
   max-width:430px;
@@ -87,216 +60,199 @@ html,body{
   border:1px solid var(--border);
   border-radius:26px;
   padding:28px;
-  box-shadow:0 40px 80px rgba(0,0,0,.35);
-  position:relative;
 }
 
-/* ================= HEADER ================= */
-.header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:22px;
-}
-.badge{
-  padding:6px 12px;
-  border-radius:999px;
-  font-size:11px;
-  background:rgba(79,124,255,.12);
-  color:var(--primary);
-  font-weight:600;
-}
-.themeBtn{
-  border:none;
-  background:transparent;
-  font-size:18px;
-  cursor:pointer;
-}
-
-/* ================= STATUS ================= */
-.status{
-  text-align:center;
-}
 .circle{
-  width:88px;
-  height:88px;
-  margin:0 auto 14px;
+  width:90px;height:90px;margin:0 auto 14px;
   border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display:flex;align-items:center;justify-content:center;
   font-size:34px;
   background:linear-gradient(145deg,var(--primary),var(--secondary));
-  color:#fff;
-  animation:float 2.5s ease-in-out infinite;
-}
-@keyframes float{
-  50%{transform:translateY(-6px)}
 }
 
-h1{font-size:24px}
-.sub{font-size:13px;color:var(--muted);margin-top:6px}
+h1{text-align:center;font-size:24px}
+.sub{text-align:center;font-size:13px;color:var(--muted);margin:8px 0 22px}
 
-/* ================= MESSAGE ================= */
 .notice{
-  margin-top:22px;
-  padding:16px;
-  border-radius:18px;
-  display:flex;
-  gap:14px;
-  background:rgba(0,0,0,.04);
+  padding:16px;border-radius:18px;
+  display:flex;gap:14px;
+  background:rgba(255,255,255,.05);
 }
-[data-theme="dark"] .notice{background:rgba(255,255,255,.05)}
 .nIcon{
-  width:40px;
-  height:40px;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:var(--card);
-  border:1px solid var(--border);
+  width:40px;height:40px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  background:#0004;
 }
 .nText{font-size:14px;font-weight:600}
 
-/* ================= INFO ================= */
-.info{
-  margin-top:24px;
-}
 .row{
-  display:flex;
-  justify-content:space-between;
-  padding:14px 0;
-  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;
+  padding:14px 0;border-bottom:1px solid var(--border);
 }
-.label{
-  font-size:11px;
-  color:var(--muted);
-  letter-spacing:1px;
-}
-.value{
-  font-family:var(--mono);
-  color:var(--primary);
-}
+.label{font-size:11px;color:var(--muted)}
+.value{font-family:var(--mono);color:var(--primary)}
 
-/* ================= PROGRESS ================= */
-.progress{
-  margin-top:22px;
-}
 .track{
-  height:6px;
-  background:rgba(0,0,0,.08);
-  border-radius:6px;
-  overflow:hidden;
+  height:6px;background:#fff2;border-radius:6px;
+  overflow:hidden;margin-top:22px;
 }
-[data-theme="dark"] .track{background:rgba(255,255,255,.12)}
 .fill{
-  height:100%;
-  width:0%;
+  height:100%;width:0%;
   background:linear-gradient(90deg,var(--secondary),var(--primary));
   transition:width linear;
 }
 
-/* ================= EXPIRY ================= */
 .expiry{
-  display:none;
-  margin-top:24px;
-  padding:20px;
-  border-radius:20px;
+  display:none;margin-top:22px;
+  padding:20px;border-radius:20px;
   text-align:center;
-  background:rgba(45,212,191,.12);
+  background:rgba(77,255,179,.12);
 }
-.expiry span{
-  font-size:11px;
-  letter-spacing:2px;
-  color:var(--accent);
-}
-.timer{
-  font-family:var(--mono);
-  font-size:28px;
-  margin-top:6px;
-}
+.timer{font-family:var(--mono);font-size:28px}
 
-/* ================= BUTTON ================= */
-button.close{
-  margin-top:26px;
-  width:100%;
-  padding:15px;
-  border-radius:18px;
+button{
+  margin-top:26px;width:100%;
+  padding:15px;border-radius:18px;
   border:1px solid var(--danger);
-  background:transparent;
-  color:var(--danger);
+  background:transparent;color:var(--danger);
   font-weight:700;
 }
-
-.hidden{display:none}
 </style>
 </head>
 
-<body data-theme="dark">
+<body>
 <div class="bg"></div>
 
 <div class="app">
-  <div class="panel">
+<div class="panel">
 
-    <div class="header">
-      <div class="badge">REAL APK</div>
-      <button class="themeBtn" onclick="toggleTheme()">🌓</button>
-    </div>
+  <div class="circle" id="topIcon">⏳</div>
+  <h1 id="title">VERIFYING</h1>
+  <div class="sub" id="subtitle">Checking device authorization…</div>
 
-    <div class="status">
-      <div class="circle" id="topIcon">⏳</div>
-      <h1 id="title">VERIFYING</h1>
-      <div class="sub" id="subtitle">Checking device authorization…</div>
-    </div>
-
-    <div class="notice">
-      <div class="nIcon" id="msgIcon">•</div>
-      <div class="nText" id="msgText">wait...</div>
-    </div>
-
-    <div class="info">
-      <div class="row">
-        <span class="label">DEVICE ID</span>
-        <span class="value" id="deviceId">—</span>
-      </div>
-      <div class="row">
-        <span class="label">ACCESS TOKEN</span>
-        <span class="value" id="userId">—</span>
-      </div>
-    </div>
-
-    <div class="progress" id="windowCloseArea">
-      <div class="track"><div class="fill" id="progressBar"></div></div>
-    </div>
-
-    <div class="expiry" id="expiryArea">
-      <span>ACCESS TIME</span>
-      <div class="timer" id="expiryTimer">00:00:00</div>
-    </div>
-
-    <button class="close" id="closeBtn">CLOSE</button>
-
+  <div class="notice">
+    <div class="nIcon" id="msgIcon">•</div>
+    <div class="nText" id="msgText">Connecting…</div>
   </div>
+
+  <div class="row">
+    <span class="label">DEVICE ID</span>
+    <span class="value" id="deviceId">—</span>
+  </div>
+  <div class="row">
+    <span class="label">TOKEN</span>
+    <span class="value" id="userId">—</span>
+  </div>
+
+  <div class="track" id="windowCloseArea">
+    <div class="fill" id="progressBar"></div>
+  </div>
+
+  <div class="expiry" id="expiryArea">
+    <div class="timer" id="expiryTimer">00:00:00</div>
+  </div>
+
+  <button id="closeBtn">CLOSE</button>
+
+</div>
 </div>
 
 <script>
-/* ================= THEME ================= */
-function toggleTheme(){
-  const b=document.body;
-  b.dataset.theme=b.dataset.theme==="dark"?"light":"dark";
-}
-
 /* ================= FIREBASE (SAME) ================= */
 firebase.initializeApp({
   apiKey:"AIzaSyBeHXB_9nHTWofFeXKOVUlQYCrB4YhAx_w",
   databaseURL:"https://real-apk-pin-default-rtdb.firebaseio.com"
 });
+const database=firebase.database();
 
-/* ⚠️ VERIFY / EXPIRY / FIREBASE LOGIC
-   YAHI RAHEGA – SAME METHODS, SAME IDs
-   (Aap apna existing JS yahin paste karein)
-*/
+/* ================= ELEMENTS ================= */
+const topIcon=document.getElementById('topIcon');
+const msgIcon=document.getElementById('msgIcon');
+const msgText=document.getElementById('msgText');
+const titleEl=document.getElementById('title');
+const subtitleEl=document.getElementById('subtitle');
+const deviceEl=document.getElementById('deviceId');
+const userEl=document.getElementById('userId');
+const bar=document.getElementById('progressBar');
+const closeBtn=document.getElementById('closeBtn');
+const expiryArea=document.getElementById('expiryArea');
+const expiryTimer=document.getElementById('expiryTimer');
+
+/* ================= PARAMS ================= */
+const p=new URLSearchParams(location.search);
+const deviceId=p.get('device');
+const code=p.get('code');
+const slotId=p.get('uid');
+
+deviceEl.textContent=deviceId||'—';
+
+/* ================= HELPERS ================= */
+function setError(msg){
+  topIcon.textContent='✖';
+  titleEl.textContent='FAILED';
+  subtitleEl.textContent=msg;
+  msgText.textContent='Access Denied';
+  startClose(5);
+}
+
+function setSuccess(){
+  topIcon.textContent='✔';
+  titleEl.textContent='SUCCESS';
+  subtitleEl.textContent='Device Authorized';
+  msgText.textContent='Access Granted';
+}
+
+function startClose(sec){
+  bar.style.transition=`width ${sec}s linear`;
+  bar.style.width='100%';
+  setTimeout(()=>window.close(),sec*1000);
+}
+
+function startExpiry(ts){
+  expiryArea.style.display='block';
+  const i=setInterval(()=>{
+    const d=ts-Date.now();
+    if(d<=0){expiryTimer.textContent='EXPIRED';clearInterval(i);return;}
+    const h=Math.floor(d/3600000);
+    const m=Math.floor(d%3600000/60000);
+    const s=Math.floor(d%60000/1000);
+    expiryTimer.textContent=
+      String(h).padStart(2,'0')+':' +
+      String(m).padStart(2,'0')+':' +
+      String(s).padStart(2,'0');
+  },1000);
+}
+
+/* ================= MAIN VERIFY (ORIGINAL LOGIC) ================= */
+async function verify(){
+ try{
+  if(!deviceId||!code||!slotId){setError('Invalid Params');return;}
+
+  const ref=database.ref(`users/${slotId}/verification_codes/${code}`);
+  const snap=await ref.once('value');
+  const data=snap.val();
+
+  if(!data){setError('Wrong Code');return;}
+  if(data.used){setError('Code Already Used');return;}
+  if(data.deviceId!==deviceId){setError('Device Mismatch');return;}
+
+  const now=Date.now();
+  await ref.update({used:true,used_at:now});
+  setSuccess();
+
+  userEl.textContent=data.access_token||'AUTHORIZED';
+
+  const cfg=await database.ref(`users/${slotId}/config`).once('value');
+  const min=parseInt(cfg.val()?.verification_minutes||1440);
+  startExpiry(now+min*60000);
+
+ }catch(e){
+  setError('Connection Error');
+ }
+}
+
+closeBtn.onclick=()=>window.close();
+window.onload=verify;
 </script>
 
 </body>
